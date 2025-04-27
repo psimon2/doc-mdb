@@ -159,7 +159,7 @@ $ydb_dist/dse d -f
 
 ### Step 1: Prepare the FHIR Data
 
-- Copy the file `fhir.nor.txt` from `/fhir/` to `/tmp/`.
+- Copy the files `fhir.nor.txt` and `fhir.eoc.txt` from `/fhir/` to `/tmp/`.
 
   > `fhir.nor.txt` contains **100,000 synthetic patient resources**, with each line representing a FHIR Patient resource.
 
