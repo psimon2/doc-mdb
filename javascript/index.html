@@ -1,0 +1,194 @@
+<!DOCTYPE html> <html lang="en"> <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Search</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .search-results {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .result-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+        .result-item:hover {
+            background-color: #f5f5f5;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        .search-type-badge {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <h2 class="mb-4">Patient Search</h2>
+                
+                <div class="input-group mb-3">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search by name, DOB, postcode, or phone..." aria-label="Patient search">
+                    <button class="btn btn-primary" type="button" id="searchButton">Search</button>
+                </div>
+                
+                <div id="searchTypeIndicator" class="mb-2" style="display: none;">
+                    <small class="text-muted">Searching by: <span id="detectedSearchType"></span></small>
+                </div>
+                
+                <div id="searchResults" class="search-results" style="display: none;">
+                    <!-- Results will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Configuration
+        const API_BASE_URL = '/mumps';
+        
+        // DOM elements
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const searchResults = document.getElementById('searchResults');
+        const searchTypeIndicator = document.getElementById('searchTypeIndicator');
+        const detectedSearchType = document.getElementById('detectedSearchType');
+        
+        // Event listeners
+        searchButton.addEventListener('click', performSearch);
+        searchInput.addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        });
+        
+        // Main search function
+        function performSearch() {
+            const searchTerm = searchInput.value.trim();
+            
+            if (!searchTerm) {
+                alert('Please enter a search term');
+                return;
+            }
+            
+            // Show loading state
+            searchResults.innerHTML = '<div class="text-center p-3">Searching... <div class="spinner-border spinner-border-sm" role="status"></div></div>';
+            searchResults.style.display = 'block';
+            
+            // Call API
+            fetchPatients(searchTerm);
+        }
+        
+        // Fetch patients from API
+        function fetchPatients(searchTerm) {
+            const url = new URL('/mumps/NORNU', window.location.origin);
+            url.searchParams.append('srch', searchTerm);
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Update search type indicator
+                    updateSearchTypeIndicator(data.searchType || 'unknown');
+                    
+                    // Process and display results
+                    displayResults(data.patients, data.totalCount || 0);
+                })
+                .catch(error => {
+                    console.error('Error fetching patients:', error);
+                    searchResults.innerHTML = '<div class="alert alert-danger">Error loading results. Please try again.</div>';
+                });
+        }
+        
+        // Display results in the UI
+        function displayResults(patients, totalCount) {
+            if (!patients || patients.length === 0) {
+                searchResults.innerHTML = '<div class="text-center p-3">No patients found matching your search.</div>';
+                return;
+            }
+            
+            let html = '';
+            
+            // Header with result count
+            html += `<div class="p-2 bg-light border-bottom">
+                        <small>Found ${totalCount} patients</small>
+                    </div>`;
+            
+            // Add each patient to the results
+            patients.forEach(patient => {
+                html += `
+                <div class="result-item" onclick="selectPatient('${patient.id}')">
+                    <div class="d-flex justify-content-between">
+                        <h5>${highlightMatches(patient.fullName)}</h5>
+                        <span class="badge bg-secondary">${patient.id}</span>
+                    </div>
+                    <div class="text-muted">
+                        <small>DOB: ${highlightMatches(patient.dob)}</small> | 
+                        <small>Phone: ${highlightMatches(patient.phone)}</small> |
+                        <small>Address: ${highlightMatches(patient.address)}</small> |
+                        <small>Postcode: ${highlightMatches(patient.postcode)}</small>
+                    </div>
+                </div>
+                `;
+            });
+            
+            searchResults.innerHTML = html;
+            searchResults.style.display = 'block';
+        }
+        
+        // Highlight matching parts of the text
+        function highlightMatches(text) {
+            const searchTerm = searchInput.value.trim();
+            if (!searchTerm || !text) return text;
+            
+            const searchRegex = new RegExp(searchTerm, 'gi');
+            return text.toString().replace(searchRegex, match => 
+                `<span class="highlight">${match}</span>`
+            );
+        }
+        
+        // Update the search type indicator
+        function updateSearchTypeIndicator(searchType) {
+            if (!searchType || searchType === 'unknown') {
+                searchTypeIndicator.style.display = 'none';
+                return;
+            }
+            
+            const typeMap = {
+                'name': 'Name',
+                'dob': 'Date of Birth',
+                'postcode': 'Postcode',
+                'phone': 'Phone Number',
+                'address': 'Address'
+            };
+            
+            detectedSearchType.textContent = typeMap[searchType] || searchType;
+            searchTypeIndicator.style.display = 'block';
+        }
+        
+        // Handle patient selection
+        function selectPatient(patientId) {
+            alert(`Patient ${patientId} selected - implement your selection logic here`);
+            // You would typically:
+            // 1. Store the selected patient ID
+            // 2. Redirect to a patient details page
+            // 3. Or populate a form with the patient data
+        }
+    </script>
+</body>
+</html>
