@@ -488,23 +488,9 @@ Run:
 Write $extract($$STT^NORNU("A"),1,1000)
 ```
 
-Returns JSON formatted patient records:
+- Extracts and displays the first 1000 characters of results
 
-```json
-{"searchType": "names","patients": [{"id":"42464","dob":"07.08.2017","postcode":
-"nn73 2xb","address":",studio 11,27,mitchellland,nn73 2xb,home","phone":"0307-55
-8-4621","fullName":"aaguirre, milton (master)"},{"id":"67699","dob":"17.12.1979"
-,"postcode":"w82 5wt","address":"61,,byrne curve,west justin,w82 5wt,home","phon
-e":"","fullName":"aaguirre, laurie (mr)"},{"id":"69225","dob":"18.12.1963","post
-code":"l5b 8wl","address":",,0,south katie,l5b 8wl,home","phone":"0375-710-7921"
-,"fullName":"aaguirre, corinne (mrs)"},{"id":"43747","dob":"16.02.2019","postcod
-e":"b40 8be","address":",,65n,lake terrychester,b40 8be,home","phone":"0734-324-
-8096","fullName":"aalsburg, ayaz (master)"},{"id":"74006","dob":"14.08.1938","po
-stcode":"s8b 8ga","address":",studio 24,4,west carole,s8b 8ga,home","phone":"043
-2-521-4072","fullName":"aalst, antoinette (mrs)"},{"id":"88503","dob":"08.06.195
-6","postcode":"w1c 2yy","address":"9,,bruce crossroad,port harrymouth,w1c 2yy,ho
-me","phone":"0226-329-7939","fullName":"
-```
+- Provides a quick way to validate the search backend is functioning
 
 ---
 
