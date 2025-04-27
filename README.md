@@ -514,6 +514,15 @@ do ENDEOC^NORNU
 ## Example SQL: GMS Registered Patients on 1 Jan 1993
 
 ```sql
+
+-- 33 = eoc.extension.valuecoding.code
+-- 42 = nor.dateofdeath
+-- 43 = eoc.period.end
+-- 39 = eoc.period.start
+-- 33 = eoc.extension.valuecoding.code
+-- 38 = eoc.patient.reference
+-- 6 = nor.address.text
+
 SELECT docid,
        ASUM('nor', DOC(docid,0,38), 42) AS dod,
        DOC(docid,0,43) AS end_date,
