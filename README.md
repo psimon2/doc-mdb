@@ -207,9 +207,6 @@ do STT^CONSUMER("eoc","/tmp/xpath_eoc.txt")
 
 ### Additional Notes
 
-- `nor` stands for "Number of Record" — a term used in **EMIS LV** systems, which were based on Micronetics Standard MUMPS (MSM).  
-- MSM was later acquired by InterSystems in the 1990s.
-
 After loading, you will have the following **globals** populated:
 
 | Global | Description |
