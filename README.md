@@ -629,7 +629,7 @@ ps aux | grep gunicorn
 
 ---
 
-## Accessing the Service
+## Accessing the Patient Search UI
 
 In your browser, navigate to:
 
