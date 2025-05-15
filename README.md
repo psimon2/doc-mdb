@@ -21,7 +21,7 @@ The underlying YottaDB technology is essentially the same as that used by **Inte
 The **MUMPS** global storage model (which powers **Epic**, **InterSystems HealthShare**, and other major healthcare systems) is a proven and highly successful approach in the healthcare technology space.  
 The key difference: **YottaDB** is **open source**, while InterSystems IRIS is not.
 
-In terms of scalability, a single YottaDB database can grow up to **16 terabytes** in size.
+Database size is constrained solely by available storage capacity.
 
 This documentation should give you everything you need to stand up a YottaDB instance in just a few minutes — provided you're comfortable working with **Linux**.  
 I used **Ubuntu** during development, but it should work with most Linux environments.
@@ -629,7 +629,7 @@ ps aux | grep gunicorn
 
 ---
 
-## Accessing the Service
+## Accessing the Patient Search UI
 
 In your browser, navigate to:
 
