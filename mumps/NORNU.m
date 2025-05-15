@@ -1,4 +1,4 @@
-NORNU ; ; 4/25/25 3:57pm
+NORNU ; ; 5/14/25 12:29pm
  quit
  
 ISNULL(var) ;
@@ -293,6 +293,7 @@ STT(norstr) ;
  new j
  
  S ^nor=norstr
+ I $data(^ICONFIG("NATIVE")) s j=$$GO^LV(norstr) quit j
  
  set norstr=$$LC^LIB(norstr)
  
