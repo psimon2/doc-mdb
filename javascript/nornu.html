@@ -1,0 +1,497 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Search</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .search-results {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .result-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+        .result-item:hover {
+            background-color: #f5f5f5;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #0d6efd;
+            background-color: #fff8e1;
+        }
+        .dob-highlight {
+            font-weight: bold;
+            color: #dc3545;
+            background-color: #ffecec;
+        }
+        .search-type-badge {
+            margin-left: 10px;
+        }
+        #helpDialog .modal-body {
+            white-space: pre-line;
+        }
+        #aboutDialog .modal-body {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        .about-section {
+            margin-bottom: 20px;
+        }
+        .about-section h5 {
+            color: #0d6efd;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        .competencies-list {
+            columns: 2;
+            -webkit-columns: 2;
+            -moz-columns: 2;
+        }
+        @media (max-width: 768px) {
+            .competencies-list {
+                columns: 1;
+                -webkit-columns: 1;
+                -moz-columns: 1;
+            }
+        }
+        .github-link {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .code-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .code-section h6 {
+            margin-top: 0;
+            color: #495057;
+        }
+        footer {
+            margin-top: 50px;
+            padding: 20px 0;
+            text-align: center;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <!-- Help Dialog (Modal) -->
+    <div class="modal fade" id="helpDialog" tabindex="-1" aria-labelledby="helpDialogLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="helpDialogLabel">Patient Search Help</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <strong>About This Software</strong>
+                    Developed by Lifetime Software Solutions
+                    Licensed under MIT License
+
+                    <strong>Key Features</strong>
+                    - Demonstrates a lightning-fast NoSQL implementation
+                    - Powered by YottaDB with 100,000 synthetic patient records
+
+                    <strong>Search Instructions</strong>
+                    1. Enter comma-separated search terms (e.g., 627,brown union,lake jennifer)
+                    2. Patients with the most matches appear at the top
+
+                    <strong>Search Examples</strong>
+                    - 23.09.1948 → Lists all patients with this birth date
+                    - 23.09.1948,7,south carly → Prioritizes patients at "7 South Carly"
+
+                    The system highlights all matching terms in your search results for easy identification.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Dialog (Modal) -->
+    <div class="modal fade" id="aboutDialog" tabindex="-1" aria-labelledby="aboutDialogLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aboutDialogLabel">About</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="about-section">
+                        <p>Need help implementing something similar?</p>
+                        <p>I provide consulting services through <strong>Lifetime Software Solutions</strong>, offering support from initial setup to full-scale software development.</p>
+                        <p>This system is powered by <strong>YottaDB's</strong> rock-solid database engine, accessed via <strong>Python-based web services</strong>.</p>
+                        <p>This software is running on <a href="https://brightbox.co.uk" target="_blank">brightbox.co.uk</a> infrastructure.</p>
+                    </div>
+
+                    <div class="about-section">
+                        <h5>Professional Summary</h5>
+                        <p>Seasoned IT leader and healthcare technology specialist with 30+ years of experience designing, developing, and implementing mission-critical systems for the NHS and global healthcare organizations. Adept at bridging technical and business needs, with deep expertise in FHIR/HL7 interoperability, data integration, and full-stack development (YottaDB, Java, Python, Vue.js, C#). Proven track record of leading teams, optimizing workflows, and delivering scalable solutions for EMIS, InterSystems HealthShare, Discovery and Endeavour Health.</p>
+                    </div>
+
+                    <div class="about-section">
+                        <h5>Core Competencies</h5>
+                        <ul class="competencies-list">
+                            <li>✔ Healthcare IT: EMIS, NHS Spine, HealthShare, FHIR/HL7, SMART on FHIR, UPRN algorithms</li>
+                            <li>✔ Programming: Java, C#, Python, JavaScript (Vue.js, Angular), MUMPS, SQL</li>
+                            <li>✔ Databases: YottaDB, Caché, InterSystem IRIS, MS SQL Server, PostgreSQL, MySQL</li>
+                            <li>✔ DevOps & Tools: Docker, AWS, OpenSearch, GitHub, REST APIs, Agile methodologies</li>
+                        </ul>
+                    </div>
+
+                    <div class="about-section">
+                        <h5>Professional Experience</h5>
+                        <p><strong>Director | Lifetime Software Solutions (Apr 2021 – Present)</strong></p>
+                        <p><em>Key Projects & Achievements:</em></p>
+                        <ul>
+                            <li>Discovery Data Extracts: Designed and maintained Java/YottaDB pipelines for COVID-19 vaccine safety monitoring (VITT algorithm), diabetes screenings, and child immunizations, serving 7+ NHS CCGs.</li>
+                            <li>ASSIGN Address Matching: Led development of a Vue.js web app and REST API (YottaDB backend) to link patient records to geospatial UPRNs, enabling research on social determinants of health.</li>
+                            <li>Synthetic Data & OpenSearch: Generated privacy-compliant synthetic datasets and evaluated semantic search AI capabilities for clinical data using Python/OpenSearch.</li>
+                        </ul>
+
+                        <p><strong>Senior Consultant | J2 Interactive, Synanetics, LHS (2014 – 2021)</strong></p>
+                        <p><em>Notable Contributions:</em></p>
+                        <ul>
+                            <li>Built STU3 FHIR servers (QEWD, IRIS) and subscription services for real-time data exchange.</li>
+                            <li>Enhanced UK Provider Directory for Coordinate My Care (CMC), reducing ODS data load times by 40%.</li>
+                            <li>UPRN Algorithm (LHS): Deployed a high-performance YottaDB REST service processing 10K addresses/minute, with 100M+ requests handled.</li>
+                        </ul>
+
+                        <p><strong>Software Architect & Leadership Roles | EMIS Health (1991 – 2014)</strong></p>
+                        <p><em>Career Highlights:</em></p>
+                        <ul>
+                            <li>NHS Spine Integration: Spearheaded PDS, SCR, and EPS integrations for EMIS LV, using C#/.NET and MSM (Micronetics Standard Mumps).</li>
+                            <li>Pioneered the UK's first comprehensive online patient portal, enabling GP registration, appointment booking, repeat prescription management, and address updates through a secure web interface.</li>
+                            <li>Developed a PalmOS sync solution and VBA-powered Word templates for automated medical reports.</li>
+                        </ul>
+                    </div>
+
+                    <div class="about-section">
+                        <h5>Education & Certifications</h5>
+                        <ul>
+                            <li>BTEC National Diploma in Computer Studies | Hull College (1987–1988)</li>
+                            <li>InterSystems Certified (Technical & Professional Employment Tests)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Patient Search</h2>
+                    <div>
+                        <button class="btn btn-outline-secondary me-2" id="helpButton">Help</button>
+                        <button class="btn btn-outline-info" id="aboutButton">About</button>
+                    </div>
+                </div>
+                
+                <div class="input-group mb-3">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search by name, DOB, postcode, or phone..." aria-label="Patient search">
+                    <button class="btn btn-primary" type="button" id="searchButton">Search</button>
+                </div>
+                
+                <div id="searchTypeIndicator" class="mb-2" style="display: none;">
+                    <small class="text-muted">Searching by: <span id="detectedSearchType"></span></small>
+                </div>
+                
+                <div id="searchResults" class="search-results" style="display: none;">
+                    <!-- Results will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Lifetime Software Solutions, Leeds, UK
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Configuration
+        const API_BASE_URL = '/mumps';
+        
+        // DOM elements
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const searchResults = document.getElementById('searchResults');
+        const searchTypeIndicator = document.getElementById('searchTypeIndicator');
+        const detectedSearchType = document.getElementById('detectedSearchType');
+        const helpButton = document.getElementById('helpButton');
+        const aboutButton = document.getElementById('aboutButton');
+        
+        // Initialize Bootstrap modals
+        const helpDialog = new bootstrap.Modal(document.getElementById('helpDialog'));
+        const aboutDialog = new bootstrap.Modal(document.getElementById('aboutDialog'));
+        
+        // Event listeners
+        searchButton.addEventListener('click', performSearch);
+        searchInput.addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        });
+        helpButton.addEventListener('click', showHelp);
+        aboutButton.addEventListener('click', showAbout);
+        
+        // Show help dialog on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            helpDialog.show();
+        });
+        
+        // Show help dialog
+        function showHelp() {
+            helpDialog.show();
+        }
+        
+        // Show about dialog
+        function showAbout() {
+            aboutDialog.show();
+        }
+        
+        // Main search function
+        function performSearch() {
+            const searchTerm = searchInput.value.trim();
+            
+            if (!searchTerm) {
+                alert('Please enter a search term');
+                return;
+            }
+            
+            // Show loading state
+            searchResults.innerHTML = '<div class="text-center p-3">Searching... <div class="spinner-border spinner-border-sm" role="status"></div></div>';
+            searchResults.style.display = 'block';
+            
+            // Call API
+            fetchPatients(searchTerm);
+        }
+        
+        // Fetch patients from API
+        function fetchPatients(searchTerm) {
+            const url = new URL('/mumps/NORNU', window.location.origin);
+            url.searchParams.append('srch', searchTerm);
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Update search type indicator
+                    updateSearchTypeIndicator(data.searchType || 'unknown');
+                    
+                    // Process and display results
+                    displayResults(data.patients, data.totalCount || 0, searchTerm);
+                })
+                .catch(error => {
+                    console.error('Error fetching patients:', error);
+                    searchResults.innerHTML = '<div class="alert alert-danger">Error loading results. Please try again.</div>';
+                });
+        }
+        
+        // Display results in the UI
+        function displayResults(patients, totalCount, searchTerm) {
+            if (!patients || patients.length === 0) {
+                searchResults.innerHTML = '<div class="text-center p-3">No patients found matching your search.</div>';
+                return;
+            }
+            
+            let html = '';
+            
+            // Header with result count
+            html += `<div class="p-2 bg-light border-bottom">
+                        <small>Found ${totalCount} patients</small>
+                    </div>`;
+            
+            // Add each patient to the results
+            patients.forEach(patient => {
+                html += `
+                <div class="result-item" onclick="selectPatient('${patient.id}')">
+                    <div class="d-flex justify-content-between">
+                        <h5>${highlightMatches(patient.fullName, searchTerm)}</h5>
+                        <span class="badge bg-secondary">${patient.id}</span>
+                    </div>
+                    <div class="text-muted">
+                        <small>DOB: ${highlightDOB(patient.dob, searchTerm)}</small> | 
+                        <small>Phone: ${highlightMatches(patient.phone, searchTerm)}</small> |
+                        <small>Address: ${highlightMatches(patient.address, searchTerm)}</small> |
+                        <small>Postcode: ${highlightMatches(patient.postcode, searchTerm)}</small>
+                    </div>
+                </div>
+                `;
+            });
+            
+            searchResults.innerHTML = html;
+            searchResults.style.display = 'block';
+        }
+        
+        // Highlight matching parts of the text (for all fields except DOB)
+        function highlightMatches(text, searchTerm) {
+            if (!searchTerm || !text) return text;
+            
+            // Split search term by commas and trim whitespace
+            const searchTerms = searchTerm.split(',').map(term => term.trim()).filter(term => term.length > 0);
+            
+            // First, find all matches and their positions
+            const matches = [];
+            searchTerms.forEach(term => {
+                if (!term) return;
+                const regex = new RegExp(escapeRegExp(term), 'gi');
+                let match;
+                while ((match = regex.exec(text)) !== null) {
+                    matches.push({
+                        start: match.index,
+                        end: match.index + match[0].length,
+                        term: match[0]
+                    });
+                    // Avoid infinite loops for zero-length matches
+                    if (match.index === regex.lastIndex) {
+                        regex.lastIndex++;
+                    }
+                }
+            });
+            
+            // Sort matches by start position
+            matches.sort((a, b) => a.start - b.start);
+            
+            // Merge overlapping matches
+            const mergedMatches = [];
+            let current = null;
+            
+            matches.forEach(match => {
+                if (!current) {
+                    current = {...match};
+                } else if (match.start <= current.end) {
+                    // Merge with current match
+                    current.end = Math.max(current.end, match.end);
+                    current.term = text.slice(current.start, current.end);
+                } else {
+                    mergedMatches.push(current);
+                    current = {...match};
+                }
+            });
+            if (current) mergedMatches.push(current);
+            
+            // Build the highlighted text
+            if (mergedMatches.length === 0) return text;
+            
+            let result = '';
+            let lastPos = 0;
+            
+            mergedMatches.forEach(match => {
+                // Add text before the match
+                result += text.slice(lastPos, match.start);
+                // Add the highlighted match
+                result += `<span class="highlight">${match.term}</span>`;
+                lastPos = match.end;
+            });
+            
+            // Add remaining text after last match
+            result += text.slice(lastPos);
+            
+            return result;
+        }
+
+        // Helper function to escape regex special characters
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+            
+        // Special highlighting for DOB field (dd.mm.yyyy format only)
+        function highlightDOB(dobText, searchTerm) {
+            if (!searchTerm || !dobText) return dobText;
+            
+            // First apply standard highlighting (will catch partial matches)
+            let highlightedText = highlightMatches(dobText, searchTerm);
+            
+            // Then look for specific date formats in the search term
+            const searchTerms = searchTerm.split(',').map(term => term.trim());
+            
+            searchTerms.forEach(term => {
+                // Check for dd.mm.yyyy format (with optional year part)
+                const dateRegex = /^(\d{1,2})\.(\d{1,2})(?:\.(\d{2,4}))?$/;
+                const match = term.match(dateRegex);
+                
+                if (match) {
+                    const day = match[1];
+                    const month = match[2];
+                    const year = match[3] || '';
+                    
+                    // Build patterns to match in the DOB text
+                    const patterns = [
+                        `${day}.${month}.${year}`,  // full date
+                        `${day}.${month}`,          // just day and month
+                        day,                        // just day
+                        month                      // just month
+                    ].filter(p => p); // remove empty patterns
+                    
+                    // Highlight each pattern that exists in the DOB text
+                    patterns.forEach(pattern => {
+                        if (dobText.includes(pattern)) {
+                            const escapedPattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                            const patternRegex = new RegExp(escapedPattern, 'g');
+                            highlightedText = highlightedText.replace(patternRegex, match => 
+                                `<span class="dob-highlight">${match}</span>`
+                            );
+                        }
+                    });
+                }
+            });
+            
+            return highlightedText;
+        }
+        
+        // Update the search type indicator
+        function updateSearchTypeIndicator(searchType) {
+            if (!searchType || searchType === 'unknown') {
+                searchTypeIndicator.style.display = 'none';
+                return;
+            }
+            
+            const typeMap = {
+                'name': 'Name',
+                'dob': 'Date of Birth',
+                'postcode': 'Postcode',
+                'phone': 'Phone Number',
+                'address': 'Address'
+            };
+            
+            detectedSearchType.textContent = typeMap[searchType] || searchType;
+            searchTypeIndicator.style.display = 'block';
+        }
+        
+        // Handle patient selection
+        function selectPatient(patientId) {
+            alert(`Patient ${patientId} selected - implement your selection logic here`);
+            // You would typically:
+            // 1. Store the selected patient ID
+            // 2. Redirect to a patient details page
+            // 3. Or populate a form with the patient data
+        }
+    </script>
+</body>
+</html>
