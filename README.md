@@ -654,3 +654,22 @@ Access it in your browser:
 ```
 http://<IP>:9081
 ```
+## Docker
+
+The doc-mdb environment can also be provisioned via docker. This will cause the doc-mdb to run in an isolated, ephemeral environment. To provision, run:
+
+```bash
+docker-compose up
+```
+
+This will build and save a doc-mdb docker image and then provision it for use.
+
+The patient search UI and YottaDB GUI can then be accessed as outlined above.
+
+The environment/container can then be removed with:
+
+```bash
+docker-compose down
+```
+
+When re-provisioning the container, the saved image will be re-used and so the process will be a lot quicker.
