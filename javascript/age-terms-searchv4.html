@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Browser</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .loading-container {
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .table-responsive {
+            margin-bottom: 20px;
+        }
+        .pagination-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 15px;
+        }
+        .table th {
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            background-color: white;
+        }
+        .numeric-cell {
+            text-align: right;
+            font-family: monospace;
+        }
+        .term-cell {
+            white-space: normal;
+            word-break: break-word;
+            max-width: 300px;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        .top-pagination {
+            margin-bottom: 20px;
+        }
+        .bottom-pagination {
+            margin-top: 20px;
+        }
+        .highlight {
+            background-color: yellow;
+            font-weight: bold;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+        .term-link {
+            color: #0d6efd;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .term-link:hover {
+            color: #0a58ca;
+        }
+        .mumps-global {
+            font-family: monospace;
+            white-space: pre;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Modal for displaying MUMPS global data -->
+    <div class="modal fade" id="mumpsModal" tabindex="-1" aria-labelledby="mumpsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="mumpsModalLabel">MUMPS Global Data</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="mumps-data" class="mumps-global"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-5">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h1 class="h4 mb-0">A Register of ALL the clinical codes in the system</h1>
+            </div>
+            <div class="card-body">
+                <div id="loading" class="loading-container">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 mb-0">Loading data...</p>
+                    </div>
+                </div>
+                
+                <div id="content" style="display: none;">
+                    <div class="search-container">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <input type="text" id="search-input" class="form-control" placeholder="Search clinical codes...">
+                            </div>
+                            <div class="col-md-2">
+                                <button id="search-btn" class="btn btn-primary w-100">Search</button>
+                            </div>
+                            <div class="col-md-2">
+                                <button id="reset-btn" class="btn btn-secondary w-100">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="top-pagination">
+                        <div class="d-flex justify-content-center">
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination mb-0">
+                                    <li class="page-item" id="prev-page-top">
+                                        <a class="page-link" href="#" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <span class="page-link pagination-info">
+                                            Page <span id="page-number-top">1</span> of <span id="total-pages-top">1</span>
+                                        </span>
+                                    </li>
+                                    <li class="page-item" id="next-page-top">
+                                        <a class="page-link" href="#" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="term-cell">TERM</th>
+                                    <th>0-4</th>
+                                    <th>5-16</th>
+                                    <th>17-24</th>
+                                    <th>25-34</th>
+                                    <th>35-44</th>
+                                    <th>45-54</th>
+                                    <th>55-64</th>
+                                    <th>65-74</th>
+                                    <th>75-84</th>
+                                    <th>85-89</th>
+                                    <th>90+</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body"></tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="bottom-pagination">
+                        <div class="d-flex justify-content-center">
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination mb-0">
+                                    <li class="page-item" id="prev-page-bottom">
+                                        <a class="page-link" href="#" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <span class="page-link pagination-info">
+                                            Page <span id="page-number-bottom">1</span> of <span id="total-pages-bottom">1</span>
+                                        </span>
+                                    </li>
+                                    <li class="page-item" id="next-page-bottom">
+                                        <a class="page-link" href="#" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="error-message" class="alert alert-danger mt-3" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Configuration
+        const API_BASE_URL = '/mumps'; // Replace with your actual API base URL
+        const DATA_ENDPOINT = '/JSONTERMS';
+        const SEARCH_ENDPOINT = '/SEARCHTERMS'; // Assuming this endpoint exists for search
+        const METADATA_ENDPOINT = '/TOTPGTERMS';
+        const KEYS_ENDPOINT = '/KEYS'; // Endpoint for KEYS interface
+        
+        // State
+        let currentPage = 1;
+        let totalPages = 1;
+        let isLoading = false;
+        let isSearching = false;
+        let currentSearchTerm = '';
+
+        // DOM Elements
+        const tableBody = document.getElementById('table-body');
+        const prevPageTopBtn = document.getElementById('prev-page-top');
+        const nextPageTopBtn = document.getElementById('next-page-top');
+        const prevPageBottomBtn = document.getElementById('prev-page-bottom');
+        const nextPageBottomBtn = document.getElementById('next-page-bottom');
+        const pageNumberTopSpan = document.getElementById('page-number-top');
+        const totalPagesTopSpan = document.getElementById('total-pages-top');
+        const pageNumberBottomSpan = document.getElementById('page-number-bottom');
+        const totalPagesBottomSpan = document.getElementById('total-pages-bottom');
+        const loadingDiv = document.getElementById('loading');
+        const contentDiv = document.getElementById('content');
+        const errorMessageDiv = document.getElementById('error-message');
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const mumpsModal = new bootstrap.Modal(document.getElementById('mumpsModal'));
+        const mumpsDataDiv = document.getElementById('mumps-data');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchMetadata()
+                .then(metadata => {
+                    totalPages = metadata.totalPages;
+                    updateTotalPagesDisplay();
+                    return fetchData(currentPage);
+                })
+                .catch(error => {
+                    showError('Failed to load data. Please try again later.');
+                    console.error('Initialization error:', error);
+                });
+            
+            // Pagination event listeners
+            prevPageTopBtn.addEventListener('click', handlePreviousPage);
+            prevPageBottomBtn.addEventListener('click', handlePreviousPage);
+            nextPageTopBtn.addEventListener('click', handleNextPage);
+            nextPageBottomBtn.addEventListener('click', handleNextPage);
+            
+            // Search event listeners
+            searchBtn.addEventListener('click', handleSearch);
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleSearch();
+                }
+            });
+            
+            // Reset event listener
+            resetBtn.addEventListener('click', resetToInitialData);
+        });
+
+        function handlePreviousPage(e) {
+            e.preventDefault();
+            if (currentPage > 1 && !isLoading) {
+                currentPage--;
+                if (isSearching) {
+                    fetchSearchResults(currentSearchTerm, currentPage);
+                } else {
+                    fetchData(currentPage);
+                }
+            }
+        }
+
+        function handleNextPage(e) {
+            e.preventDefault();
+            if (currentPage < totalPages && !isLoading) {
+                currentPage++;
+                if (isSearching) {
+                    fetchSearchResults(currentSearchTerm, currentPage);
+                } else {
+                    fetchData(currentPage);
+                }
+            }
+        }
+
+        function handleSearch() {
+            const searchTerm = searchInput.value.trim();
+            if (searchTerm) {
+                currentSearchTerm = searchTerm;
+                currentPage = 1;
+                isSearching = true;
+                fetchSearchResults(searchTerm, currentPage);
+            }
+        }
+
+        function resetToInitialData() {
+            currentSearchTerm = '';
+            searchInput.value = '';
+            currentPage = 1;
+            isSearching = false;
+            fetchMetadata()
+                .then(metadata => {
+                    totalPages = metadata.totalPages;
+                    updateTotalPagesDisplay();
+                    return fetchData(currentPage);
+                })
+                .catch(error => {
+                    showError('Failed to reset data. Please try again later.');
+                    console.error('Reset error:', error);
+                });
+        }
+
+        // Fetch metadata from API
+        async function fetchMetadata() {
+            try {
+                const response = await fetch(`${API_BASE_URL}${METADATA_ENDPOINT}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                if (!data.totalPages) throw new Error('Metadata missing totalPages');
+                return data;
+            } catch (error) {
+                console.error('Error fetching metadata:', error);
+                throw error;
+            }
+        }
+
+        // Fetch search results from API
+        async function fetchSearchResults(searchTerm, page) {
+            if (isLoading) return;
+            
+            isLoading = true;
+            showLoading();
+            hideError();
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}${SEARCH_ENDPOINT}?term=${encodeURIComponent(searchTerm)}&page=${page}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                
+                // Assuming the search endpoint returns both data and metadata
+                if (data.data && data.metadata) {
+                    renderTable(data.data);
+                    totalPages = data.metadata.totalPages || 1;
+                    updateTotalPagesDisplay();
+                    updatePaginationControls();
+                    hideLoading();
+                    showContent();
+                } else {
+                    // Fallback if the endpoint doesn't return metadata
+                    renderTable(data);
+                    totalPages = 1; // Assume single page for search results
+                    updateTotalPagesDisplay();
+                    updatePaginationControls();
+                    hideLoading();
+                    showContent();
+                }
+            } catch (error) {
+                console.error('Error fetching search results:', error);
+                hideLoading();
+                showError('Failed to perform search. Please try again.');
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        // Fetch data from API
+        async function fetchData(page) {
+            if (isLoading) return;
+            
+            isLoading = true;
+            showLoading();
+            hideError();
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}${DATA_ENDPOINT}?page=${page}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                renderTable(data);
+                updatePaginationControls();
+                hideLoading();
+                showContent();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                hideLoading();
+                showError('Failed to load page data. Please try again.');
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        // Render table with data
+        function renderTable(data) {
+            tableBody.innerHTML = '';
+            
+            if (!data || data.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="13" class="text-center text-muted">No data available</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                const parts = item.row.split('~');
+                
+                // Ensure we have exactly 13 columns (term + 11 age groups + total)
+                const rowData = parts.slice(0, 13);
+                while (rowData.length < 13) rowData.push('0');
+                
+                rowData.forEach((value, index) => {
+                    const cell = document.createElement('td');
+                    
+                    if (index === 0) {
+                        // This is the TERM column - create a clickable link
+                        cell.classList.add('term-cell');
+                        const termLink = document.createElement('span');
+                        termLink.classList.add('term-link');
+                        
+                        if (isSearching && item.key) {
+                            termLink.innerHTML = highlightSearchTerms(value, item.key);
+                        } else {
+                            termLink.textContent = value;
+                        }
+                        
+                        // Add click handler to fetch MUMPS global data
+                        termLink.addEventListener('click', () => {
+                            fetchMumpsGlobalData(value.trim());
+                        });
+                        
+                        cell.appendChild(termLink);
+                    } else {
+                        cell.classList.add('numeric-cell');
+                        cell.textContent = value || '0';
+                    }
+                    
+                    row.appendChild(cell);
+                });
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Fetch MUMPS global data for a term
+        async function fetchMumpsGlobalData(term) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${KEYS_ENDPOINT}?term=${encodeURIComponent(term)}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                
+                // Format the data as MUMPS global listings
+                let mumpsOutput = '';
+                if (Array.isArray(data)) {
+                    data.forEach(item => {
+                        mumpsOutput += `^CLSYN("${item.key}","${item.rubric}","${item.code}")=\n`;
+                    });
+                }
+                
+                // Display in modal
+                mumpsDataDiv.textContent = mumpsOutput;
+                mumpsModal.show();
+            } catch (error) {
+                console.error('Error fetching MUMPS global data:', error);
+                showError('Failed to fetch MUMPS global data for this term.');
+            }
+        }
+
+        // Highlight search terms in the text
+        function highlightSearchTerms(text, searchTerms) {
+            if (!text || !searchTerms) return text;
+            
+            // First escape HTML in the original text
+            let safeText = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            
+            // Split search terms and filter out empty ones
+            const terms = searchTerms.split(' ').filter(term => term.trim().length > 0);
+            
+            // Create a map of positions to highlight
+            const highlightMap = Array(safeText.length).fill(false);
+            
+            // Mark which characters should be highlighted
+            terms.forEach(term => {
+                const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(escapedTerm, 'gi');
+                let match;
+                
+                while ((match = regex.exec(safeText)) !== null) {
+                    for (let i = match.index; i < match.index + match[0].length; i++) {
+                        highlightMap[i] = true;
+                    }
+                }
+            });
+            
+            // Build the final HTML with proper highlighting spans
+            let result = '';
+            let inHighlight = false;
+            
+            for (let i = 0; i < safeText.length; i++) {
+                if (highlightMap[i] && !inHighlight) {
+                    result += '<span class="highlight">';
+                    inHighlight = true;
+                } else if (!highlightMap[i] && inHighlight) {
+                    result += '</span>';
+                    inHighlight = false;
+                }
+                result += safeText[i];
+            }
+            
+            // Close any remaining open span
+            if (inHighlight) {
+                result += '</span>';
+            }
+            
+            return result;
+        }
+
+        // Update pagination controls
+        function updatePaginationControls() {
+            pageNumberTopSpan.textContent = currentPage;
+            pageNumberBottomSpan.textContent = currentPage;
+            prevPageTopBtn.classList.toggle('disabled', currentPage <= 1);
+            prevPageBottomBtn.classList.toggle('disabled', currentPage <= 1);
+            nextPageTopBtn.classList.toggle('disabled', currentPage >= totalPages);
+            nextPageBottomBtn.classList.toggle('disabled', currentPage >= totalPages);
+        }
+        
+        // Update total pages display
+        function updateTotalPagesDisplay() {
+            totalPagesTopSpan.textContent = totalPages;
+            totalPagesBottomSpan.textContent = totalPages;
+        }
+
+        // UI Helper functions
+        function showLoading() {
+            loadingDiv.style.display = 'flex';
+            contentDiv.style.display = 'none';
+        }
+        
+        function hideLoading() {
+            loadingDiv.style.display = 'none';
+        }
+        
+        function showContent() {
+            contentDiv.style.display = 'block';
+        }
+        
+        function showError(message) {
+            errorMessageDiv.textContent = message;
+            errorMessageDiv.style.display = 'block';
+        }
+        
+        function hideError() {
+            errorMessageDiv.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
