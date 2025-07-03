@@ -12,3 +12,7 @@ REQUIRESAUTH : ydb_string_t * REQUIRESAUTH^MUMPSRV(I:ydb_string_t *, I:ydb_strin
 VALIDATEUSER: ydb_string_t * VALIDATEUSER^MUMPSRV(I:ydb_string_t *, I:ydb_string_t *)
 GETORIGINS: ydb_string_t * GETORIGINS^MUMPSRV()
 NORNU : ydb_string_t * STT^NORNU(I:ydb_string_t *)
+JSONTERMS : ydb_string_t * JSON^TERMS(I:ydb_string_t *)
+TOTPGTERMS : ydb_string_t * TOTPAGES^TERMS()
+SEARCHTERMS : ydb_string_t * SEARCH^TERMS(I:ydb_string_t *, I:ydb_string_t *)
+KEYS : ydb_string_t * KEY^TERMS(I:ydb_string_t *)
