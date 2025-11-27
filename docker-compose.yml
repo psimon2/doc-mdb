@@ -1,0 +1,11 @@
+services:
+ docmdb:
+   image: docmdb:docmdb
+   build:
+      context: .
+      dockerfile: dockerfile
+   ports: 
+      - "9080:9080"
+      - "9081:9081"
+   hostname: docmdb
+   container_name: docmdb
